@@ -7,6 +7,9 @@ import com.mino.model.*;
 import com.mino.repository.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -45,7 +48,7 @@ public class QuestionnaireController {
     @PostMapping
     @PreAuthorize("hasRole('MAMAN')")
     public ResponseEntity<QuestionnaireResponse> soumettre(@Valid @RequestBody QuestionnaireRequest request,
-                                                              @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+                                                           @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
         boolean modeleValide = modeleRepository.findAll().stream()
                 .anyMatch(m -> m.isActif() && m.getNom().equalsIgnoreCase(request.type()));
         if (!modeleValide) {
@@ -82,8 +85,8 @@ public class QuestionnaireController {
     /** Vue globale (rapport d'impact annuel, relances) - reservee COORDINATRICE. */
     @GetMapping
     @PreAuthorize("hasRole('COORDINATRICE')")
-    public ResponseEntity<List<QuestionnaireAdminResponse>> listerTout() {
-        List<QuestionnaireAdminResponse> tout = questionnaireRepository.findAll().stream()
+    public ResponseEntity<Page<QuestionnaireAdminResponse>> listerTout(@PageableDefault(size = 20) Pageable pageable) {
+        Page<QuestionnaireAdminResponse> tout = questionnaireRepository.findAll(pageable)
                 .map(q -> new QuestionnaireAdminResponse(
                         q.getId(),
                         q.getMaman().getId(),
@@ -92,8 +95,7 @@ public class QuestionnaireController {
                         q.getType(),
                         q.getPhase(),
                         q.getDateSoumission()
-                ))
-                .toList();
+                ));
         return ResponseEntity.ok(tout);
     }
 

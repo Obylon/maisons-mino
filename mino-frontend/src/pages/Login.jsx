@@ -93,7 +93,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => { setModeOublie(true); setMessageOublie(""); }}
-              style={{ border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#1e3a52", marginTop: 12 }}
+              style={{ border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "var(--pine)", marginTop: 12 }}
             >
               Mot de passe oublié ?
             </button>
@@ -118,7 +118,7 @@ export default function Login() {
                 />
               </div>
 
-              {messageOublie && <p style={{ fontSize: 13, color: "#4f8a6d" }}>{messageOublie}</p>}
+              {messageOublie && <p style={{ fontSize: 13, color: "var(--success)" }}>{messageOublie}</p>}
 
               <button className="btn-primary" type="submit" disabled={envoiOublie}>
                 {envoiOublie ? "Envoi..." : "Envoyer"}
@@ -128,7 +128,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => setModeOublie(false)}
-              style={{ border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#1e3a52", marginTop: 12 }}
+              style={{ border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "var(--pine)", marginTop: 12 }}
             >
               ← Retour à la connexion
             </button>

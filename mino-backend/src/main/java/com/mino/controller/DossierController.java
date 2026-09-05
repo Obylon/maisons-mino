@@ -8,12 +8,14 @@ import com.mino.model.Utilisateur;
 import com.mino.repository.DossierRepository;
 import com.mino.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -32,11 +34,10 @@ public class DossierController {
     private final DossierService dossierService;
 
     @GetMapping
-    public ResponseEntity<List<DossierResume>> lister() {
-        List<DossierResume> dossiers = dossierRepository.findAll().stream()
+    public ResponseEntity<Page<DossierResume>> lister(@PageableDefault(size = 20) Pageable pageable) {
+        Page<DossierResume> dossiers = dossierRepository.findAll(pageable)
                 .map(d -> new DossierResume(d.getId(), d.getNom(), d.getPrenom(), d.getEmail(),
-                        d.getRole(), d.isCompteSupprime(), d.getDateDerniereMaj()))
-                .toList();
+                        d.getRole(), d.isCompteSupprime(), d.getDateDerniereMaj()));
         return ResponseEntity.ok(dossiers);
     }
 

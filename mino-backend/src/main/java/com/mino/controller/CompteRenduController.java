@@ -12,6 +12,9 @@ import com.mino.repository.CompteRenduRepository;
 import com.mino.repository.ProfessionnelRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -40,7 +43,7 @@ public class CompteRenduController {
     @PostMapping
     @PreAuthorize("hasRole('PROFESSIONNEL')")
     public ResponseEntity<CompteRenduResponse> rediger(@Valid @RequestBody CompteRenduRequest request,
-                                                          @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+                                                       @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
         Atelier atelier = atelierRepository.findById(request.atelierId())
                 .orElseThrow(() -> new NoSuchElementException("Atelier introuvable : " + request.atelierId()));
 
@@ -75,9 +78,8 @@ public class CompteRenduController {
 
     @GetMapping
     @PreAuthorize("hasRole('COORDINATRICE')")
-    public ResponseEntity<List<CompteRenduResponse>> listerTout() {
-        List<CompteRenduResponse> comptesRendus = compteRenduRepository.findAll()
-                .stream().map(this::toResponse).toList();
+    public ResponseEntity<Page<CompteRenduResponse>> listerTout(@PageableDefault(size = 20) Pageable pageable) {
+        Page<CompteRenduResponse> comptesRendus = compteRenduRepository.findAll(pageable).map(this::toResponse);
         return ResponseEntity.ok(comptesRendus);
     }
 

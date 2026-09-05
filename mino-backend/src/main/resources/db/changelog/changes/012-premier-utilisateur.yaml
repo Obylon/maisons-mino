@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 1
       author: t.fontep
+      context: seed-dev
       comment: >
         Premier compte de test, role COORDINATRICE (acces admin complet).
         Mot de passe en clair : mino2026 (hash BCrypt genere hors ligne, compatible Spring Security).

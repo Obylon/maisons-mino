@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { cohorteApi } from "../../services/api";
+import Modal from "../../components/Modal";
 
 export default function Cohortes() {
   const [cohortes, setCohortes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [modalOuverte, setModalOuverte] = useState(false);
 
   const [nom, setNom] = useState("");
   const [ville, setVille] = useState("");
@@ -31,6 +33,7 @@ export default function Cohortes() {
       setNom("");
       setVille("");
       setDateDebut("");
+      setModalOuverte(false);
       charger();
     } catch {
       setError("La création a échoué.");
@@ -51,15 +54,19 @@ export default function Cohortes() {
 
   return (
     <>
-      <h1 className="page-title">Cohortes & groupes</h1>
-      <p className="page-subtitle">Création des cohortes, constitution des groupes de 5.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h1 className="page-title">Cohortes & groupes</h1>
+          <p className="page-subtitle">Création des cohortes, constitution des groupes de 5.</p>
+        </div>
+        <button className="btn-primary" onClick={() => setModalOuverte(true)}>+ Nouvelle cohorte</button>
+      </div>
 
-      <div className="card">
-        <p className="card-title">Nouvelle cohorte</p>
+      <Modal open={modalOuverte} onClose={() => setModalOuverte(false)} title="Nouvelle cohorte">
         <form onSubmit={handleCreer}>
           <div className="field">
             <label>Nom</label>
-            <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ex: Paris 17e - Cohorte 1" required />
+            <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ex: Paris 17e - Cohorte 1" required autoFocus />
           </div>
           <div className="field">
             <label>Ville</label>
@@ -74,9 +81,9 @@ export default function Cohortes() {
             {envoi ? "Création..." : "Créer la cohorte"}
           </button>
         </form>
-      </div>
+      </Modal>
 
-      <div className="card" style={{ marginTop: 16 }}>
+      <div className="card">
         <p className="card-title">Liste des cohortes</p>
         {loading && <p>Chargement...</p>}
         {!loading && cohortes.length === 0 && <p className="empty-state">Aucune cohorte pour l'instant.</p>}
@@ -99,7 +106,7 @@ export default function Cohortes() {
                   <td>
                     <button
                       onClick={() => handleSupprimer(c.id, c.nom)}
-                      style={{ border: "none", background: "none", color: "#b23b3b", cursor: "pointer", fontSize: 12 }}
+                      style={{ border: "none", background: "none", color: "var(--danger)", cursor: "pointer", fontSize: 12 }}
                     >
                       Supprimer
                     </button>

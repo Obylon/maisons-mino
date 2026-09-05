@@ -2,21 +2,28 @@ package com.mino.controller;
 
 import com.mino.dto.AtelierDtos.AtelierRequest;
 import com.mino.dto.AtelierDtos.AtelierResponse;
+import com.mino.email.EmailService;
 import com.mino.model.Atelier;
 import com.mino.model.Groupe;
 import com.mino.model.Professionnel;
+import com.mino.notification.NotificationService;
 import com.mino.repository.AtelierRepository;
 import com.mino.repository.GroupeRepository;
 import com.mino.repository.ProfessionnelRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * Creation et gestion administrative des ateliers - reservee a la COORDINATRICE.
@@ -32,19 +39,25 @@ public class AtelierAdminController {
     private final AtelierRepository atelierRepository;
     private final ProfessionnelRepository professionnelRepository;
     private final GroupeRepository groupeRepository;
+    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @PostMapping
     public ResponseEntity<AtelierResponse> creer(@Valid @RequestBody AtelierRequest request) {
         Atelier atelier = new Atelier();
         appliquerRequest(atelier, request);
         atelier = atelierRepository.save(atelier);
+
+        if (atelier.getProfessionnel() != null) {
+            notifierProfessionnel(atelier, "Nouvel atelier ajouté à votre planning");
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(atelier));
     }
 
     @GetMapping
-    public ResponseEntity<List<AtelierResponse>> lister() {
-        List<AtelierResponse> ateliers = atelierRepository.findAll()
-                .stream().map(this::toResponse).toList();
+    public ResponseEntity<Page<AtelierResponse>> lister(@PageableDefault(size = 20) Pageable pageable) {
+        Page<AtelierResponse> ateliers = atelierRepository.findAll(pageable).map(this::toResponse);
         return ResponseEntity.ok(ateliers);
     }
 
@@ -60,8 +73,17 @@ public class AtelierAdminController {
                                                     @Valid @RequestBody AtelierRequest request) {
         Atelier atelier = atelierRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Atelier introuvable : " + id));
+
+        String ancienProfessionnelId = atelier.getProfessionnel() != null ? atelier.getProfessionnel().getId() : null;
+
         appliquerRequest(atelier, request);
         atelier = atelierRepository.save(atelier);
+
+        String nouveauProfessionnelId = atelier.getProfessionnel() != null ? atelier.getProfessionnel().getId() : null;
+        if (nouveauProfessionnelId != null && !Objects.equals(ancienProfessionnelId, nouveauProfessionnelId)) {
+            notifierProfessionnel(atelier, "Un atelier vous a été assigné");
+        }
+
         return ResponseEntity.ok(toResponse(atelier));
     }
 
@@ -72,6 +94,34 @@ public class AtelierAdminController {
         }
         atelierRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Notifie le professionnel assigne, par email (toujours recu, meme hors ligne)
+     * ET par notification temps reel s'il a l'application ouverte (cloche + badge,
+     * voir NotificationService) - les deux canaux se completent, voir la logique
+     * deja en place pour les messages (MessageController).
+     */
+    private void notifierProfessionnel(Atelier atelier, String sujet) {
+        var utilisateur = atelier.getProfessionnel().getUtilisateur();
+        String dateFormatee = atelier.getDateHeure() != null
+                ? atelier.getDateHeure().format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'à' HH:mm"))
+                : "date non fixée";
+        String libelle = atelier.getTitre() != null ? atelier.getTitre() : atelier.getType().name();
+
+        notificationService.notifier(utilisateur.getId(), "nouvel-atelier",
+                sujet + " : " + libelle + " (" + dateFormatee + ")");
+
+        emailService.envoyer(
+                utilisateur.getEmail(),
+                sujet + " - Maisons MINO",
+                "Bonjour " + utilisateur.getPrenom() + ",\n\n"
+                        + sujet.toLowerCase() + " :\n\n"
+                        + "Atelier : " + libelle + "\n"
+                        + "Date : " + dateFormatee + "\n\n"
+                        + "Connectez-vous à votre espace pour consulter votre planning.\n\n"
+                        + "L'équipe Maisons MINO"
+        );
     }
 
     private void appliquerRequest(Atelier atelier, AtelierRequest request) {
@@ -108,7 +158,15 @@ public class AtelierAdminController {
                 a.getProfessionnel() != null
                         ? a.getProfessionnel().getUtilisateur().getPrenom() + " " + a.getProfessionnel().getUtilisateur().getNom()
                         : null,
-                a.getGroupe() != null ? a.getGroupe().getId() : null
+                a.getGroupe() != null ? a.getGroupe().getId() : null,
+                nomLisibleDuGroupe(a)
         );
+    }
+
+    /** Nom lisible du groupe : son nom s'il en a un, sinon la cohorte a titre de secours. */
+    private String nomLisibleDuGroupe(Atelier a) {
+        if (a.getGroupe() == null) return null;
+        if (a.getGroupe().getNom() != null && !a.getGroupe().getNom().isBlank()) return a.getGroupe().getNom();
+        return "Groupe de la cohorte " + a.getGroupe().getCohorte().getNom();
     }
 }

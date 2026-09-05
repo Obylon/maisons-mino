@@ -79,7 +79,7 @@ export default function Calendrier() {
                       className="btn-primary"
                       disabled={enCours === a.id}
                       onClick={() => handleToggleInscription(a)}
-                      style={a.inscrite ? { background: "#4f8a6d" } : {}}
+                      style={a.inscrite ? { background: "var(--success)" } : {}}
                     >
                       {enCours === a.id ? "..." : a.inscrite ? "Inscrite ✓" : "S'inscrire"}
                     </button>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { cohorteApi, groupeApi, adminApi, atelierApi, promPremApi } from "../../services/api";
 
-const BarChart = ({ data, labelKey, valueKey, color = "#1e3a52" }) => {
+const BarChart = ({ data, labelKey, valueKey, color = "var(--pine)" }) => {
   const max = Math.max(...data.map((d) => d[valueKey]), 1);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -27,19 +27,22 @@ export default function Reporting() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // .lister/.listerTout sont maintenant pagines (20 par defaut) - pour des
+    // statistiques agregees, on demande une tres grande page en une fois plutot
+    // que d'ajouter une vraie pagination ici (pas pertinent pour un dashboard).
     Promise.all([
       cohorteApi.lister(),
       groupeApi.lister(),
-      adminApi.listerUtilisateurs(),
-      atelierApi.lister(),
-      promPremApi.listerTout(),
+      adminApi.listerUtilisateurs(0, 1000),
+      atelierApi.lister(0, 1000),
+      promPremApi.listerTout(0, 1000),
     ])
       .then(([resCohortes, resGroupes, resUtilisateurs, resAteliers, resQuestionnaires]) => {
         const cohortes = resCohortes.data;
         const groupes = resGroupes.data;
-        const utilisateurs = resUtilisateurs.data;
-        const ateliers = resAteliers.data;
-        const questionnaires = resQuestionnaires.data;
+        const utilisateurs = resUtilisateurs.data.content;
+        const ateliers = resAteliers.data.content;
+        const questionnaires = resQuestionnaires.data.content;
 
         const utilisateursActifs = utilisateurs.filter((u) => u.actif);
         const parRole = ["MAMAN", "PARTENAIRE", "PROFESSIONNEL", "COORDINATRICE"].map((role) => ({
@@ -100,7 +103,7 @@ export default function Reporting() {
           { label: "Questionnaires", value: stats.totalQuestionnaires },
         ].map((s) => (
           <div key={s.label} className="card" style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 26, fontWeight: 700, color: "#1e3a52" }}>{s.value}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: "var(--pine)" }}>{s.value}</div>
             <div style={{ fontSize: 12, color: "var(--text-muted, #888)" }}>{s.label}</div>
           </div>
         ))}
@@ -122,7 +125,7 @@ export default function Reporting() {
           {stats.parTypeAtelier.length === 0 ? (
             <p className="empty-state">Aucun atelier créé pour l'instant.</p>
           ) : (
-            <BarChart data={stats.parTypeAtelier} labelKey="type" valueKey="nombre" color="#c98a4b" />
+            <BarChart data={stats.parTypeAtelier} labelKey="type" valueKey="nombre" color="var(--clay)" />
           )}
         </div>
       </div>
@@ -135,7 +138,7 @@ export default function Reporting() {
         {stats.totalQuestionnaires === 0 ? (
           <p className="empty-state">Aucun questionnaire soumis pour l'instant.</p>
         ) : (
-          <BarChart data={stats.parPhase} labelKey="phase" valueKey="nombre" color="#4f8a6d" />
+          <BarChart data={stats.parPhase} labelKey="phase" valueKey="nombre" color="var(--success)" />
         )}
       </div>
     </>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { questionnaireModeleApi } from "../../services/api";
+import Modal from "../../components/Modal";
 
 const TYPES_QUESTION = [
   { value: "TEXTE_LIBRE", label: "Texte libre" },
@@ -11,6 +12,7 @@ export default function QuestionnaireModeles() {
   const [modeles, setModeles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [modalOuverte, setModalOuverte] = useState(false);
 
   const [nom, setNom] = useState("");
   const [description, setDescription] = useState("");
@@ -41,6 +43,7 @@ export default function QuestionnaireModeles() {
       await questionnaireModeleApi.creer({ nom: nom.trim(), description: description.trim() || null });
       setNom("");
       setDescription("");
+      setModalOuverte(false);
       charger();
     } catch (err) {
       setError(err.response?.data?.message || "La création a échoué (nom peut-être déjà utilisé).");
@@ -107,18 +110,22 @@ export default function QuestionnaireModeles() {
 
   return (
     <>
-      <h1 className="page-title">Modèles de questionnaires</h1>
-      <p className="page-subtitle">
-        PROM et PREM existent par défaut — créez d'autres questionnaires avec leurs
-        propres questions (texte libre, choix unique, échelle 1-10).
-      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h1 className="page-title">Modèles de questionnaires</h1>
+          <p className="page-subtitle">
+            PROM et PREM existent par défaut — créez d'autres questionnaires avec leurs
+            propres questions (texte libre, choix unique, échelle 1-10).
+          </p>
+        </div>
+        <button className="btn-primary" onClick={() => setModalOuverte(true)}>+ Nouveau modèle</button>
+      </div>
 
-      <div className="card">
-        <p className="card-title">Nouveau modèle</p>
+      <Modal open={modalOuverte} onClose={() => setModalOuverte(false)} title="Nouveau modèle">
         <form onSubmit={handleCreer}>
           <div className="field">
             <label>Nom</label>
-            <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ex: Satisfaction atelier" required />
+            <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ex: Satisfaction atelier" required autoFocus />
           </div>
           <div className="field">
             <label>Description</label>
@@ -129,7 +136,7 @@ export default function QuestionnaireModeles() {
             {envoi ? "Création..." : "Créer le modèle"}
           </button>
         </form>
-      </div>
+      </Modal>
 
       <div className="card" style={{ marginTop: 16 }}>
         <p className="card-title">Modèles existants ({modeles.length})</p>
@@ -142,7 +149,7 @@ export default function QuestionnaireModeles() {
                   <div>
                     <strong>{m.nom}</strong>
                     {m.description && <span style={{ marginLeft: 8, fontSize: 12, color: "var(--text-muted, #888)" }}>{m.description}</span>}
-                    <span style={{ marginLeft: 8, fontSize: 11, color: m.actif ? "#4f8a6d" : "#b23b3b" }}>
+                    <span style={{ marginLeft: 8, fontSize: 11, color: m.actif ? "var(--success)" : "var(--danger)" }}>
                       {m.actif ? "Actif" : "Désactivé"}
                     </span>
                   </div>
@@ -152,7 +159,7 @@ export default function QuestionnaireModeles() {
                     </button>
                     <button
                       onClick={() => handleToggle(m)}
-                      style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: m.actif ? "#b23b3b" : "#4f8a6d" }}
+                      style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: m.actif ? "var(--danger)" : "var(--success)" }}
                     >
                       {m.actif ? "Désactiver" : "Réactiver"}
                     </button>
@@ -173,7 +180,7 @@ export default function QuestionnaireModeles() {
                             </span>
                             <button
                               onClick={() => handleSupprimerQuestion(q.id)}
-                              style={{ border: "none", background: "none", cursor: "pointer", fontSize: 11, color: "#b23b3b", marginLeft: 8 }}
+                              style={{ border: "none", background: "none", cursor: "pointer", fontSize: 11, color: "var(--danger)", marginLeft: 8 }}
                             >
                               Supprimer
                             </button>

@@ -25,7 +25,8 @@ public class AtelierDtos {
             Integer dureeMinutes,
             String professionnelId,
             String professionnelNom,
-            String groupeId
+            String groupeId,
+            String groupeNom
     ) {}
 
     public record CalendrierAtelierResponse(

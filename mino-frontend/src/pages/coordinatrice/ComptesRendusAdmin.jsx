@@ -1,18 +1,24 @@
 import { useEffect, useState } from "react";
 import { compteRenduApi } from "../../services/api";
+import Pagination from "../../components/Pagination";
 
 export default function ComptesRendusAdmin() {
   const [comptesRendus, setComptesRendus] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     compteRenduApi
-      .listerTout()
-      .then((res) => setComptesRendus(res.data))
+      .listerTout(page)
+      .then((res) => {
+        setComptesRendus(res.data.content);
+        setTotalPages(res.data.totalPages);
+      })
       .catch(() => setError("Impossible de charger les comptes-rendus pour le moment."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [page]);
 
   return (
     <>
@@ -42,6 +48,7 @@ export default function ComptesRendusAdmin() {
             ))}
           </div>
         )}
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </>
   );

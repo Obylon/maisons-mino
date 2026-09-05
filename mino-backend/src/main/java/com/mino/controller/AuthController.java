@@ -4,6 +4,7 @@ import com.mino.dto.AuthDtos.ChangerMotDePasseRequest;
 import com.mino.dto.AuthDtos.LoginRequest;
 import com.mino.dto.AuthDtos.LoginResponse;
 import com.mino.dto.AuthDtos.MotDePasseOublieRequest;
+import com.mino.dto.AuthDtos.ProfilRequest;
 import com.mino.email.EmailService;
 import com.mino.model.Utilisateur;
 import com.mino.repository.UtilisateurRepository;
@@ -58,7 +59,8 @@ public class AuthController {
                 utilisateur.getId(),
                 utilisateur.getEmail(),
                 utilisateur.getNom(),
-                utilisateur.getPrenom()
+                utilisateur.getPrenom(),
+                utilisateur.getTelephone()
         ));
     }
 
@@ -103,13 +105,39 @@ public class AuthController {
      */
     @PutMapping("/changer-mot-de-passe")
     public ResponseEntity<Void> changerMotDePasse(@Valid @RequestBody ChangerMotDePasseRequest request,
-                                                     @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+                                                  @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
         if (!passwordEncoder.matches(request.ancienMotDePasse(), utilisateurConnecte.getMotDePasseHash())) {
             throw new IllegalArgumentException("Ancien mot de passe incorrect.");
         }
         utilisateurConnecte.setMotDePasseHash(passwordEncoder.encode(request.nouveauMotDePasse()));
         utilisateurRepository.save(utilisateurConnecte);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Mise a jour des informations communes du profil (nom, prenom, telephone) -
+     * disponible pour les 4 roles, permet a chacun de corriger une erreur de
+     * saisie ou de completer une information manquante apres la creation du
+     * compte par la coordinatrice. Ne touche jamais l'email ni le mot de passe -
+     * voir /changer-mot-de-passe pour ce dernier.
+     */
+    @PutMapping("/mon-profil")
+    public ResponseEntity<LoginResponse> mettreAJourProfil(@Valid @RequestBody ProfilRequest request,
+                                                           @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+        utilisateurConnecte.setNom(request.nom());
+        utilisateurConnecte.setPrenom(request.prenom());
+        utilisateurConnecte.setTelephone(request.telephone());
+        Utilisateur sauvegarde = utilisateurRepository.save(utilisateurConnecte);
+
+        return ResponseEntity.ok(new LoginResponse(
+                null, // pas de nouveau token necessaire, juste les infos a jour
+                sauvegarde.getRole().name(),
+                sauvegarde.getId(),
+                sauvegarde.getEmail(),
+                sauvegarde.getNom(),
+                sauvegarde.getPrenom(),
+                sauvegarde.getTelephone()
+        ));
     }
 
     private String genererMotDePasseTemporaire() {

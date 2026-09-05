@@ -33,12 +33,13 @@ export default api;
 export const authApi = {
   login: (email, motDePasse) => api.post("/auth/login", { email, motDePasse }),
   motDePasseOublie: (email) => api.post("/auth/mot-de-passe-oublie", { email }),
+  mettreAJourProfil: (payload) => api.put("/auth/mon-profil", payload),
   changerMotDePasse: (ancienMotDePasse, nouveauMotDePasse) =>
     api.put("/auth/changer-mot-de-passe", { ancienMotDePasse, nouveauMotDePasse }),
 };
 
 export const adminApi = {
-  listerUtilisateurs: () => api.get("/admin/utilisateurs"),
+  listerUtilisateurs: (page = 0, size = 20) => api.get(`/admin/utilisateurs?page=${page}&size=${size}`),
   listerMamans: () => api.get("/admin/utilisateurs/mamans"),
   listerProfessionnels: () => api.get("/admin/utilisateurs/professionnels"),
   creerCompte: (payload) => api.post("/admin/utilisateurs", payload),
@@ -59,6 +60,12 @@ export const cohorteApi = {
 
 export const mamanApi = {
   monParcours: () => api.get("/maman/parcours"),
+  mettreAJourParcours: (payload) => api.put("/maman/parcours", payload),
+};
+
+export const professionnelApi = {
+  monProfil: () => api.get("/professionnel/mon-profil"),
+  mettreAJourProfil: (payload) => api.put("/professionnel/mon-profil", payload),
 };
 
 export const groupeApi = {
@@ -79,7 +86,7 @@ export const atelierApi = {
   monCalendrier: () => api.get("/ateliers/mon-calendrier"), // MAMAN
   ateliersP1P2: () => api.get("/ateliers/p1-p2"), // PARTENAIRE / COORDINATRICE
   // Vue admin (COORDINATRICE)
-  lister: () => api.get("/ateliers"),
+  lister: (page = 0, size = 20) => api.get(`/ateliers?page=${page}&size=${size}`),
   obtenir: (id) => api.get(`/ateliers/${id}`),
   creer: (payload) => api.post("/ateliers", payload),
   modifier: (id, payload) => api.put(`/ateliers/${id}`, payload),
@@ -116,14 +123,14 @@ export const questionnaireModeleApi = {
 export const compteRenduApi = {
   rediger: (payload) => api.post("/comptes-rendus", payload), // PROFESSIONNEL
   mesComptesRendus: () => api.get("/comptes-rendus/mes-comptes-rendus"), // PROFESSIONNEL
-  listerTout: () => api.get("/comptes-rendus"), // COORDINATRICE
+  listerTout: (page = 0, size = 20) => api.get(`/comptes-rendus?page=${page}&size=${size}`), // COORDINATRICE
 };
 
 export const promPremApi = {
   soumettre: (payload) => api.post("/prom-prem", payload), // MAMAN
   mesReponses: () => api.get("/prom-prem/mes-reponses"), // MAMAN
   parMaman: (mamanId) => api.get(`/prom-prem/maman/${mamanId}`), // PROFESSIONNEL suivi / COORDINATRICE
-  listerTout: () => api.get("/prom-prem"), // COORDINATRICE
+  listerTout: (page = 0, size = 20) => api.get(`/prom-prem?page=${page}&size=${size}`), // COORDINATRICE
 };
 
 export const conventionApi = {
@@ -135,7 +142,7 @@ export const conventionApi = {
 };
 
 export const dossierApi = {
-  lister: () => api.get("/dossiers"),
+  lister: (page = 0, size = 20) => api.get(`/dossiers?page=${page}&size=${size}`),
   obtenir: (id) => api.get(`/dossiers/${id}`),
   genererPourUtilisateur: (utilisateurId) => api.post(`/dossiers/utilisateur/${utilisateurId}/generer`),
 };

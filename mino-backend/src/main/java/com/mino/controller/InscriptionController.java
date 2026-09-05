@@ -11,6 +11,9 @@ import com.mino.model.*;
 import com.mino.repository.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -91,7 +94,7 @@ public class InscriptionController {
             // des mamans "en attente" pour pouvoir en constituer un groupe.
             if (request.groupeId() != null) {
                 groupe = groupeRepository.findById(request.groupeId())
-                    .orElse(null);
+                        .orElse(null);
                 if (groupe == null) {
                     return ResponseEntity.badRequest().body("Groupe introuvable : " + request.groupeId());
                 }
@@ -171,10 +174,9 @@ public class InscriptionController {
 
     @GetMapping
     @PreAuthorize("hasRole('COORDINATRICE')")
-    public ResponseEntity<List<UtilisateurResume>> lister() {
-        List<UtilisateurResume> utilisateurs = utilisateurRepository.findAll().stream()
-                .map(u -> new UtilisateurResume(u.getId(), u.getEmail(), u.getRole(), u.getNom(), u.getPrenom(), u.isActif()))
-                .toList();
+    public ResponseEntity<Page<UtilisateurResume>> lister(@PageableDefault(size = 20) Pageable pageable) {
+        Page<UtilisateurResume> utilisateurs = utilisateurRepository.findAll(pageable)
+                .map(u -> new UtilisateurResume(u.getId(), u.getEmail(), u.getRole(), u.getNom(), u.getPrenom(), u.isActif()));
         return ResponseEntity.ok(utilisateurs);
     }
 

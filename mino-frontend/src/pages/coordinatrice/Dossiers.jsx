@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { dossierApi } from "../../services/api";
+import Pagination from "../../components/Pagination";
 
 export default function Dossiers() {
   const [dossiers, setDossiers] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [selectionId, setSelectionId] = useState(null);
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -10,11 +13,14 @@ export default function Dossiers() {
 
   useEffect(() => {
     dossierApi
-      .lister()
-      .then((res) => setDossiers(res.data))
+      .lister(page)
+      .then((res) => {
+        setDossiers(res.data.content);
+        setTotalPages(res.data.totalPages);
+      })
       .catch(() => setError("Impossible de charger les dossiers pour le moment."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [page]);
 
   const ouvrir = (id) => {
     setSelectionId(id);
@@ -32,7 +38,7 @@ export default function Dossiers() {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16 }}>
         <div className="card">
-          <p className="card-title">Tous les dossiers ({dossiers.length})</p>
+          <p className="card-title">Tous les dossiers ({dossiers.length} sur cette page)</p>
           {loading && <p>Chargement...</p>}
           {error && <p className="error-text">{error}</p>}
           {!loading && dossiers.length === 0 && <p className="empty-state">Aucun dossier généré pour l'instant.</p>}
@@ -56,6 +62,7 @@ export default function Dossiers() {
               ))}
             </div>
           )}
+          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </div>
 
         <div className="card">

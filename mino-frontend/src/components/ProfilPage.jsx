@@ -2,8 +2,15 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { authApi } from "../services/api";
 
-export default function ProfilPage({ extraFields }) {
-  const { user } = useAuth();
+export default function ProfilPage({ extraFields, extraForm }) {
+  const { user, updateUser } = useAuth();
+
+  const [nom, setNom] = useState(user.nom || "");
+  const [prenom, setPrenom] = useState(user.prenom || "");
+  const [telephone, setTelephone] = useState(user.telephone || "");
+  const [messageInfos, setMessageInfos] = useState("");
+  const [erreurInfos, setErreurInfos] = useState("");
+  const [envoiInfos, setEnvoiInfos] = useState(false);
 
   const [ancien, setAncien] = useState("");
   const [nouveau, setNouveau] = useState("");
@@ -11,6 +18,22 @@ export default function ProfilPage({ extraFields }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [envoi, setEnvoi] = useState(false);
+
+  const handleEnregistrerInfos = async (e) => {
+    e.preventDefault();
+    setErreurInfos("");
+    setMessageInfos("");
+    setEnvoiInfos(true);
+    try {
+      const res = await authApi.mettreAJourProfil({ nom: nom.trim(), prenom: prenom.trim(), telephone: telephone.trim() || null });
+      updateUser({ nom: res.data.nom, prenom: res.data.prenom, telephone: res.data.telephone });
+      setMessageInfos("Informations mises à jour.");
+    } catch (err) {
+      setErreurInfos(err.response?.data?.message || "La mise à jour a échoué.");
+    } finally {
+      setEnvoiInfos(false);
+    }
+  };
 
   const handleChangerMotDePasse = async (e) => {
     e.preventDefault();
@@ -41,19 +64,39 @@ export default function ProfilPage({ extraFields }) {
   return (
     <>
       <h1 className="page-title">Mon profil</h1>
-      <p className="page-subtitle">Informations personnelles et paramètres de compte.</p>
+      <p className="page-subtitle">Corrigez ou complétez vos informations à tout moment.</p>
 
       <div className="card">
-        <table className="table-simple">
-          <tbody>
-            <tr><th>Prénom</th><td>{user.prenom}</td></tr>
-            <tr><th>Nom</th><td>{user.nom}</td></tr>
-            <tr><th>Email</th><td>{user.email ?? "—"}</td></tr>
-            <tr><th>Rôle</th><td><span className={`badge badge-role-${user.role.toLowerCase()}`}>{user.role}</span></td></tr>
-            {extraFields}
-          </tbody>
-        </table>
+        <p className="card-title">Mes informations</p>
+        <form onSubmit={handleEnregistrerInfos}>
+          <div className="field">
+            <label>Prénom</label>
+            <input value={prenom} onChange={(e) => setPrenom(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>Nom</label>
+            <input value={nom} onChange={(e) => setNom(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>Téléphone</label>
+            <input type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} placeholder="06 12 34 56 78" />
+          </div>
+          <table className="table-simple" style={{ marginBottom: 16 }}>
+            <tbody>
+              <tr><th>Email</th><td>{user.email ?? "—"}</td></tr>
+              <tr><th>Rôle</th><td><span className={`badge badge-role-${user.role.toLowerCase()}`}>{user.role}</span></td></tr>
+              {extraFields}
+            </tbody>
+          </table>
+          {erreurInfos && <p className="error-text">{erreurInfos}</p>}
+          {messageInfos && <p style={{ color: "var(--success)" }}>{messageInfos}</p>}
+          <button className="btn-primary" type="submit" disabled={envoiInfos}>
+            {envoiInfos ? "Enregistrement..." : "Enregistrer"}
+          </button>
+        </form>
       </div>
+
+      {extraForm}
 
       <div className="card" style={{ marginTop: 16 }}>
         <p className="card-title">Changer mon mot de passe</p>
@@ -71,7 +114,7 @@ export default function ProfilPage({ extraFields }) {
             <input type="password" value={confirmation} onChange={(e) => setConfirmation(e.target.value)} required minLength={6} />
           </div>
           {error && <p className="error-text">{error}</p>}
-          {message && <p style={{ color: "#4f8a6d" }}>{message}</p>}
+          {message && <p style={{ color: "var(--success)" }}>{message}</p>}
           <button className="btn-primary" type="submit" disabled={envoi}>
             {envoi ? "Modification..." : "Changer le mot de passe"}
           </button>

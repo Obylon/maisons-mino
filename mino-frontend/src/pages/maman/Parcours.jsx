@@ -26,7 +26,7 @@ export default function Parcours() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 16 }}>
         <div className="card" style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 32, fontWeight: 700, color: "#1e3a52" }}>
+          <div style={{ fontSize: 32, fontWeight: 700, color: "var(--pine)" }}>
             {bebeNe ? parcours.ageBebeJours : parcours.semaineGrossesse ?? "—"}
           </div>
           <div style={{ fontSize: 13, color: "var(--text-muted, #888)" }}>

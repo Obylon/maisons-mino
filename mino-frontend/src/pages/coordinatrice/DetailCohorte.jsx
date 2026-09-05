@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import BackLink from "../../components/BackLink";
 import { cohorteApi, groupeApi } from "../../services/api";
 
 const initiales = (prenom) => (prenom?.[0] ?? "").toUpperCase();
@@ -18,6 +19,8 @@ export default function DetailCohorte() {
   const [envoi, setEnvoi] = useState(false);
 
   const [afficherFormGroupe, setAfficherFormGroupe] = useState(false);
+  const [renommageId, setRenommageId] = useState(null);
+  const [nouveauNom, setNouveauNom] = useState("");
   const [nomGroupe, setNomGroupe] = useState("");
 
   const charger = async () => {
@@ -130,6 +133,28 @@ export default function DetailCohorte() {
     }
   };
 
+  const commencerRenommage = (groupe) => {
+    setRenommageId(groupe.id);
+    setNouveauNom(groupe.nom || "");
+  };
+
+  const handleEnregistrerNom = async (groupe) => {
+    setError("");
+    setMessage("");
+    try {
+      await groupeApi.modifier(groupe.id, {
+        cohorteId: groupe.cohorteId,
+        nom: nouveauNom.trim() || null,
+        dateConstitution: groupe.dateConstitution,
+      });
+      setMessage("Groupe renommé.");
+      setRenommageId(null);
+      charger();
+    } catch (err) {
+      setError(err.response?.data?.message || "Le renommage a échoué.");
+    }
+  };
+
   const handleSupprimerGroupe = async (groupeId, nomAffiche) => {
     if (!window.confirm(`Supprimer ${nomAffiche} ? Les femmes qui y sont repasseront "en attente".`)) return;
     setError("");
@@ -150,13 +175,11 @@ export default function DetailCohorte() {
 
   return (
     <>
-      <p style={{ fontSize: 13, color: "var(--text-muted, #888)", marginBottom: 4 }}>
-        <Link to="/coordinatrice/cohortes">Cohortes &amp; groupes</Link> &nbsp;/&nbsp; {cohorte.nom}
-      </p>
+      <BackLink to="/coordinatrice/cohortes" label="Cohortes & groupes" />
       <h1 className="page-title">{cohorte.nom}</h1>
       <p className="page-subtitle">Constitution des groupes de 5 · l'effet village.</p>
 
-      {message && <p style={{ color: "#4f8a6d" }}>{message}</p>}
+      {message && <p style={{ color: "var(--success)" }}>{message}</p>}
       {error && <p className="error-text">{error}</p>}
 
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
@@ -274,10 +297,43 @@ export default function DetailCohorte() {
             {groupes.map((g) => (
               <div key={g.id} style={{ border: "1px solid var(--border, #e4e1da)", borderRadius: 10, padding: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <strong>{g.nom || "Groupe sans nom"}</strong>
+                  {renommageId === g.id ? (
+                    <div style={{ display: "flex", gap: 4, flex: 1, marginRight: 8 }}>
+                      <input
+                        value={nouveauNom}
+                        onChange={(e) => setNouveauNom(e.target.value)}
+                        placeholder="Nom du groupe"
+                        autoFocus
+                        style={{ flex: 1, fontSize: 13, padding: "3px 6px" }}
+                      />
+                      <button
+                        onClick={() => handleEnregistrerNom(g)}
+                        style={{ border: "none", background: "none", color: "var(--success)", cursor: "pointer", fontSize: 13 }}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => setRenommageId(null)}
+                        style={{ border: "none", background: "none", color: "var(--ink-muted)", cursor: "pointer", fontSize: 13 }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <span>
+                      <strong>{g.nom || "Groupe sans nom"}</strong>
+                      <button
+                        onClick={() => commencerRenommage(g)}
+                        title="Renommer"
+                        style={{ border: "none", background: "none", color: "var(--ink-muted)", cursor: "pointer", fontSize: 12, marginLeft: 6 }}
+                      >
+                        ✎
+                      </button>
+                    </span>
+                  )}
                   <button
                     onClick={() => handleSupprimerGroupe(g.id, g.nom || "ce groupe")}
-                    style={{ border: "none", background: "none", color: "#b23b3b", cursor: "pointer", fontSize: 12 }}
+                    style={{ border: "none", background: "none", color: "var(--danger)", cursor: "pointer", fontSize: 12 }}
                   >
                     Supprimer
                   </button>
@@ -285,7 +341,7 @@ export default function DetailCohorte() {
                 <div style={{ fontSize: 12, color: "var(--text-muted, #888)", marginBottom: 8 }}>
                   {g.tailleActuelle}/{g.tailleCible} membres
                   {g.tailleActuelle >= g.tailleCible && (
-                    <span style={{ marginLeft: 8, fontWeight: 700, color: "#4f8a6d" }}>Complet</span>
+                    <span style={{ marginLeft: 8, fontWeight: 700, color: "var(--success)" }}>Complet</span>
                   )}
                 </div>
                 {g.membres.length === 0 ? (
@@ -294,7 +350,7 @@ export default function DetailCohorte() {
                   g.membres.map((m) => (
                     <div key={m.utilisateurId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", fontSize: 13 }}>
                       <span style={{
-                        width: 22, height: 22, borderRadius: "50%", background: "#c98a4b", color: "#fff",
+                        width: 22, height: 22, borderRadius: "50%", background: "var(--clay)", color: "#fff",
                         fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                       }}>
                         {initiales(m.prenom)}
@@ -302,7 +358,7 @@ export default function DetailCohorte() {
                       <span style={{ flex: 1 }}>{m.prenom}</span>
                       <button
                         onClick={() => handleRetirerMembre(g.id, m.mamanId, m.prenom)}
-                        style={{ border: "none", background: "none", color: "#b23b3b", cursor: "pointer", fontSize: 11 }}
+                        style={{ border: "none", background: "none", color: "var(--danger)", cursor: "pointer", fontSize: 11 }}
                       >
                         Retirer
                       </button>
