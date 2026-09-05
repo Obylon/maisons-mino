@@ -1,14 +1,18 @@
 package com.mino.controller;
 
 import com.mino.dto.ParcoursDtos.ParcoursResponse;
+import com.mino.dto.ParcoursDtos.ParcoursUpdateRequest;
 import com.mino.model.Maman;
 import com.mino.model.Utilisateur;
 import com.mino.repository.MamanRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,5 +58,24 @@ public class MamanController {
                 ageBebeJours
         );
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Permet a une maman de corriger elle-meme son terme de grossesse ou la date
+     * de naissance du bebe - utile si une erreur de saisie s'est glissee a la
+     * creation du compte, ou si l'info n'etait pas encore connue a l'epoque.
+     */
+    @PutMapping("/parcours")
+    @PreAuthorize("hasRole('MAMAN')")
+    public ResponseEntity<Void> mettreAJourParcours(@RequestBody ParcoursUpdateRequest request,
+                                                    @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+        Maman maman = mamanRepository.findByUtilisateurId(utilisateurConnecte.getId())
+                .orElseThrow(() -> new IllegalStateException("Aucun profil maman associe a ce compte"));
+
+        maman.setDateTermeGrossesse(request.dateTermeGrossesse());
+        maman.setDateNaissanceBebe(request.dateNaissanceBebe());
+        mamanRepository.save(maman);
+
+        return ResponseEntity.noContent().build();
     }
 }

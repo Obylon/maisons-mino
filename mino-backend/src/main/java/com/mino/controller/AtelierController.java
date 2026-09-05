@@ -1,5 +1,6 @@
 package com.mino.controller;
 
+import com.mino.dto.AtelierDtos.AtelierResponse;
 import com.mino.model.Atelier;
 import com.mino.model.Professionnel;
 import com.mino.model.Utilisateur;
@@ -20,6 +21,11 @@ import java.util.List;
  * un PROFESSIONNEL ne voit jamais la liste complète des ateliers, uniquement les siens.
  * Le filtrage se fait ici côté service (via professionnel_id), pas seulement côté route,
  * pour éviter tout accès transverse même en cas d'erreur de paramétrage d'URL.
+ *
+ * CORRECTION : renvoie AtelierResponse (DTO) au lieu de l'entite Atelier brute -
+ * renvoyer l'entite JPA directement provoquait une exception de serialisation
+ * Jackson des que l'atelier avait un professionnel assigne (relation paresseuse
+ * Hibernate non serialisable telle quelle).
  */
 @RestController
 @RequestMapping("/api/ateliers")
@@ -31,12 +37,35 @@ public class AtelierController {
 
     @GetMapping("/mes-ateliers")
     @PreAuthorize("hasRole('PROFESSIONNEL')")
-    public ResponseEntity<List<Atelier>> mesAteliers(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+    public ResponseEntity<List<AtelierResponse>> mesAteliers(@AuthenticationPrincipal Utilisateur utilisateurConnecte) {
         Professionnel professionnel = professionnelRepository
                 .findByUtilisateurId(utilisateurConnecte.getId())
                 .orElseThrow(() -> new IllegalStateException("Aucun profil professionnel associé à ce compte"));
 
-        List<Atelier> ateliers = atelierRepository.findByProfessionnelId(professionnel.getId());
+        List<AtelierResponse> ateliers = atelierRepository.findByProfessionnelId(professionnel.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
         return ResponseEntity.ok(ateliers);
+    }
+
+    private AtelierResponse toResponse(Atelier a) {
+        return new AtelierResponse(
+                a.getId(),
+                a.getTitre(),
+                a.getType(),
+                a.getDateHeure(),
+                a.getDureeMinutes(),
+                a.getProfessionnel() != null ? a.getProfessionnel().getId() : null,
+                a.getProfessionnel() != null
+                        ? a.getProfessionnel().getUtilisateur().getPrenom() + " " + a.getProfessionnel().getUtilisateur().getNom()
+                        : null,
+                a.getGroupe() != null ? a.getGroupe().getId() : null,
+                a.getGroupe() != null
+                        ? (a.getGroupe().getNom() != null && !a.getGroupe().getNom().isBlank()
+                        ? a.getGroupe().getNom()
+                        : "Groupe de la cohorte " + a.getGroupe().getCohorte().getNom())
+                        : null
+        );
     }
 }

@@ -1,20 +1,28 @@
 import { useEffect, useState } from "react";
 import { promPremApi } from "../../services/api";
+import Pagination from "../../components/Pagination";
 
 export default function PromPremAdmin() {
   const [reponses, setReponses] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filtreType, setFiltreType] = useState("TOUS");
 
   useEffect(() => {
     promPremApi
-      .listerTout()
-      .then((res) => setReponses(res.data))
+      .listerTout(page)
+      .then((res) => {
+        setReponses(res.data.content);
+        setTotalPages(res.data.totalPages);
+      })
       .catch(() => setError("Impossible de charger les questionnaires pour le moment."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [page]);
 
+  // Note : le filtre par type s'applique uniquement aux resultats de la page
+  // courante (limitation acceptable liee a la pagination cote serveur).
   const reponsesFiltrees = filtreType === "TOUS"
     ? reponses
     : reponses.filter((r) => r.type === filtreType);
@@ -29,7 +37,7 @@ export default function PromPremAdmin() {
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <p className="card-title" style={{ margin: 0 }}>
-            Suivi des questionnaires ({reponsesFiltrees.length})
+            Suivi des questionnaires ({reponsesFiltrees.length} sur cette page)
           </p>
           <select value={filtreType} onChange={(e) => setFiltreType(e.target.value)}>
             <option value="TOUS">Tous les types</option>
@@ -68,6 +76,7 @@ export default function PromPremAdmin() {
             </tbody>
           </table>
         )}
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </>
   );

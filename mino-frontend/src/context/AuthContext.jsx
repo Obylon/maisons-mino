@@ -11,11 +11,25 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, motDePasse) => {
     const { data } = await authApi.login(email, motDePasse);
-    // data: { token, role, utilisateurId, nom, prenom } — voir AuthDtos.LoginResponse côté backend
+    // data: { token, role, utilisateurId, email, nom, prenom, telephone } — voir AuthDtos.LoginResponse côté backend
     localStorage.setItem("mino_token", data.token);
     localStorage.setItem("mino_user", JSON.stringify(data));
     setUser(data);
     return data;
+  }, []);
+
+  /**
+   * Met a jour les infos de l'utilisateur courant apres une modification de
+   * profil (nom/prenom/telephone) - sans ca, la sidebar et le reste de
+   * l'app continueraient d'afficher les anciennes infos jusqu'a la
+   * prochaine reconnexion.
+   */
+  const updateUser = useCallback((partialData) => {
+    setUser((prev) => {
+      const next = { ...prev, ...partialData };
+      localStorage.setItem("mino_user", JSON.stringify(next));
+      return next;
+    });
   }, []);
 
   const logout = useCallback(() => {
@@ -25,7 +39,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

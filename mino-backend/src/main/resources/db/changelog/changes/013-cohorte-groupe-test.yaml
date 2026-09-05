@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 1
       author: t.fontep
+      context: seed-dev
       comment: Cohorte de test pour valider l'inscription d'une MAMAN via InscriptionController.
       changes:
         - insert:
@@ -22,6 +23,7 @@ databaseChangeLog:
   - changeSet:
       id: 2
       author: t.fontep
+      context: seed-dev
       comment: Groupe de 5 femmes de test, rattache a la cohorte ci-dessus.
       changes:
         - insert:

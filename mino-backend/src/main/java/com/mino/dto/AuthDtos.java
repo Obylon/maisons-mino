@@ -16,7 +16,8 @@ public class AuthDtos {
             String utilisateurId,
             String email,
             String nom,
-            String prenom
+            String prenom,
+            String telephone
     ) {}
 
     public record MotDePasseOublieRequest(
@@ -26,5 +27,12 @@ public class AuthDtos {
     public record ChangerMotDePasseRequest(
             @NotBlank String ancienMotDePasse,
             @NotBlank String nouveauMotDePasse
+    ) {}
+
+    /** Champs communs aux 4 roles, modifiables par la personne elle-meme depuis son profil. */
+    public record ProfilRequest(
+            @NotBlank String nom,
+            @NotBlank String prenom,
+            String telephone
     ) {}
 }

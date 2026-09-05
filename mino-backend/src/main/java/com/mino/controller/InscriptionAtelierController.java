@@ -85,7 +85,7 @@ public class InscriptionAtelierController {
     @PostMapping("/{id}/inscriptions")
     @PreAuthorize("hasAnyRole('MAMAN', 'PARTENAIRE')")
     public ResponseEntity<InscriptionResponse> sInscrire(@PathVariable String id,
-                                                            @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+                                                         @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
         Atelier atelier = atelierRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Atelier introuvable : " + id));
 
@@ -124,7 +124,7 @@ public class InscriptionAtelierController {
     @DeleteMapping("/{id}/inscriptions/moi")
     @PreAuthorize("hasAnyRole('MAMAN', 'PARTENAIRE')")
     public ResponseEntity<Void> seDesinscrire(@PathVariable String id,
-                                                @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+                                              @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
         InscriptionAtelier inscription = inscriptionRepository.findByAtelierId(id).stream()
                 .filter(insc -> insc.getUtilisateur().getId().equals(utilisateurConnecte.getId()))
                 .findFirst()
@@ -166,7 +166,8 @@ public class InscriptionAtelierController {
                         a.getProfessionnel() != null
                                 ? a.getProfessionnel().getUtilisateur().getPrenom() + " " + a.getProfessionnel().getUtilisateur().getNom()
                                 : null,
-                        a.getGroupe() != null ? a.getGroupe().getId() : null
+                        a.getGroupe() != null ? a.getGroupe().getId() : null,
+                        null // les ateliers P1/P2 n'ont pas de groupe
                 ))
                 .toList();
         return ResponseEntity.ok(ateliers);

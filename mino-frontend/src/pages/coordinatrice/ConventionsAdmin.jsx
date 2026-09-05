@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { adminApi, conventionApi } from "../../services/api";
+import Modal from "../../components/Modal";
 
 export default function ConventionsAdmin() {
   const [conventions, setConventions] = useState([]);
   const [professionnels, setProfessionnels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [modalOuverte, setModalOuverte] = useState(false);
 
   const [professionnelId, setProfessionnelId] = useState("");
   const [tarif, setTarif] = useState("75.00");
@@ -39,6 +41,7 @@ export default function ConventionsAdmin() {
       });
       setProfessionnelId("");
       setDateSignature("");
+      setModalOuverte(false);
       charger();
     } catch (err) {
       setError(err.response?.data?.message || "La création a échoué.");
@@ -49,15 +52,19 @@ export default function ConventionsAdmin() {
 
   return (
     <>
-      <h1 className="page-title">Conventions de prestation</h1>
-      <p className="page-subtitle">Tarifs et statuts contractuels des professionnels.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h1 className="page-title">Conventions de prestation</h1>
+          <p className="page-subtitle">Tarifs et statuts contractuels des professionnels.</p>
+        </div>
+        <button className="btn-primary" onClick={() => setModalOuverte(true)}>+ Nouvelle convention</button>
+      </div>
 
-      <div className="card">
-        <p className="card-title">Nouvelle convention</p>
+      <Modal open={modalOuverte} onClose={() => setModalOuverte(false)} title="Nouvelle convention">
         <form onSubmit={handleCreer}>
           <div className="field">
             <label>Professionnel</label>
-            <select value={professionnelId} onChange={(e) => setProfessionnelId(e.target.value)} required>
+            <select value={professionnelId} onChange={(e) => setProfessionnelId(e.target.value)} required autoFocus>
               <option value="" disabled>— Choisir —</option>
               {professionnels.map((p) => (
                 <option key={p.professionnelId} value={p.professionnelId}>
@@ -90,9 +97,9 @@ export default function ConventionsAdmin() {
             {envoi ? "Création..." : "Créer la convention"}
           </button>
         </form>
-      </div>
+      </Modal>
 
-      <div className="card" style={{ marginTop: 16 }}>
+      <div className="card">
         <p className="card-title">Conventions existantes ({conventions.length})</p>
         {loading && <p>Chargement...</p>}
         {!loading && conventions.length === 0 && <p className="empty-state">Aucune convention créée pour l'instant.</p>}
