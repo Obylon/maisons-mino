@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      changes:
+        - createTable:
+            tableName: convention_prestation
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_convention_prestation
+                    nullable: false
+              - column:
+                  name: professionnel_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_convention_professionnel
+                    references: professionnel(id)
+              - column:
+                  name: tarif
+                  type: numeric(8,2)
+                  defaultValueNumeric: 75.00
+                  constraints:
+                    nullable: false
+              - column:
+                  name: statut
+                  type: varchar(50)
+              - column:
+                  name: date_signature
+                  type: date

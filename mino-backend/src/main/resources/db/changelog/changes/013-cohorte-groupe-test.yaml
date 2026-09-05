@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: Cohorte de test pour valider l'inscription d'une MAMAN via InscriptionController.
+      changes:
+        - insert:
+            tableName: cohorte
+            columns:
+              - column:
+                  name: id
+                  value: b7850bc2-afc8-47c5-9fde-942c312e8256
+              - column:
+                  name: nom
+                  value: Paris 17e - Cohorte 1
+              - column:
+                  name: ville
+                  value: Paris
+              - column:
+                  name: date_debut
+                  valueDate: 2026-09-01
+  - changeSet:
+      id: 2
+      author: t.fontep
+      comment: Groupe de 5 femmes de test, rattache a la cohorte ci-dessus.
+      changes:
+        - insert:
+            tableName: groupe
+            columns:
+              - column:
+                  name: id
+                  value: 92edef05-34b8-4475-ad3d-83306b677b91
+              - column:
+                  name: cohorte_id
+                  value: b7850bc2-afc8-47c5-9fde-942c312e8256
+              - column:
+                  name: date_constitution
+                  valueDate: 2026-09-01

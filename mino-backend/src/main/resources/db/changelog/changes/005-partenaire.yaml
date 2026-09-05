@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        maman_id reste un simple identifiant cote JPA (pas de relation @ManyToOne navigable,
+        voir Partenaire.java) - la FK en base assure l'integrite referentielle sans que
+        le code Java ne puisse traverser cette relation.
+      changes:
+        - createTable:
+            tableName: partenaire
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_partenaire
+                    nullable: false
+              - column:
+                  name: utilisateur_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uq_partenaire_utilisateur
+                    foreignKeyName: fk_partenaire_utilisateur
+                    references: utilisateur(id)
+              - column:
+                  name: maman_id
+                  type: varchar(36)
+                  constraints:
+                    foreignKeyName: fk_partenaire_maman
+                    references: maman(id)
+              - column:
+                  name: lien_administratif_uniquement
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false

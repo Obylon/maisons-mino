@@ -1,0 +1,10 @@
+target/
+*.class
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Secrets locaux - ne jamais versionner (les secrets reels sont en variables
+# d'environnement systeme, pas dans un fichier - filet de securite au cas ou)
+application-local.properties

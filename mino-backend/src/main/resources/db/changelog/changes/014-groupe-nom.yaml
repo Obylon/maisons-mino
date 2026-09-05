@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: Ajout du nom libre du groupe (ex "Groupe A"), demande pour l'affichage admin.
+      changes:
+        - addColumn:
+            tableName: groupe
+            columns:
+              - column:
+                  name: nom
+                  type: varchar(255)

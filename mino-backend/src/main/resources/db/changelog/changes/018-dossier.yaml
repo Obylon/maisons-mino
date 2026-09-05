@@ -1,0 +1,57 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        Dossiers archives - un par personne (maman, partenaire, professionnel,
+        coordinatrice), independant du compte utilisateur. Persiste meme apres
+        suppression du compte (pas de FK vers utilisateur - juste une copie de
+        son id d'origine, a titre indicatif).
+      changes:
+        - createTable:
+            tableName: dossier
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_dossier
+                    nullable: false
+              - column:
+                  name: utilisateur_id_origine
+                  type: varchar(36)
+              - column:
+                  name: email
+                  type: varchar(255)
+              - column:
+                  name: nom
+                  type: varchar(255)
+              - column:
+                  name: prenom
+                  type: varchar(255)
+              - column:
+                  name: role
+                  type: varchar(20)
+              - column:
+                  name: compte_supprime
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_creation
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_derniere_maj
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: contenu
+                  type: text
+                  constraints:
+                    nullable: false

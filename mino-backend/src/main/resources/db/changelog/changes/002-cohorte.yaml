@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      changes:
+        - createTable:
+            tableName: cohorte
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_cohorte
+                    nullable: false
+              - column:
+                  name: nom
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ville
+                  type: varchar(255)
+              - column:
+                  name: date_debut
+                  type: date
+              - column:
+                  name: date_fin
+                  type: date

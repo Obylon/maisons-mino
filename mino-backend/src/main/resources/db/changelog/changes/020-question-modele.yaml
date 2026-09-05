@@ -1,0 +1,45 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        Questions structurees rattachees a un modele de questionnaire - permet
+        de construire de vrais formulaires (texte libre, choix unique, echelle
+        1-10) plutot qu'une simple zone de texte generique.
+      changes:
+        - createTable:
+            tableName: question_modele
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_question_modele
+                    nullable: false
+              - column:
+                  name: modele_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_question_modele_modele
+                    references: questionnaire_modele(id)
+              - column:
+                  name: texte
+                  type: varchar(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: options
+                  type: varchar(1000)
+              - column:
+                  name: ordre
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false

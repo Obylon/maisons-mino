@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      changes:
+        - createTable:
+            tableName: maman
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_maman
+                    nullable: false
+              - column:
+                  name: utilisateur_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uq_maman_utilisateur
+                    foreignKeyName: fk_maman_utilisateur
+                    references: utilisateur(id)
+              - column:
+                  name: date_terme_grossesse
+                  type: date
+              - column:
+                  name: date_naissance_bebe
+                  type: date
+              - column:
+                  name: cohorte_id
+                  type: varchar(36)
+                  constraints:
+                    foreignKeyName: fk_maman_cohorte
+                    references: cohorte(id)
+              - column:
+                  name: groupe_id
+                  type: varchar(36)
+                  constraints:
+                    foreignKeyName: fk_maman_groupe
+                    references: groupe(id)
+              - column:
+                  name: date_entree_parcours
+                  type: date
+              - column:
+                  name: date_sortie_prevue
+                  type: date

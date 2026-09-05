@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      changes:
+        - createTable:
+            tableName: professionnel
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_professionnel
+                    nullable: false
+              - column:
+                  name: utilisateur_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uq_professionnel_utilisateur
+                    foreignKeyName: fk_professionnel_utilisateur
+                    references: utilisateur(id)
+              - column:
+                  name: specialite
+                  type: varchar(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: statut_conventionnement
+                  type: varchar(255)

@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: Suivi du rappel automatique envoye 24h avant un atelier (evite les doublons).
+      changes:
+        - addColumn:
+            tableName: atelier
+            columns:
+              - column:
+                  name: rappel_envoye
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false

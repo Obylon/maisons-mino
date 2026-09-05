@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        Premier compte de test, role COORDINATRICE (acces admin complet).
+        Mot de passe en clair : mino2026 (hash BCrypt genere hors ligne, compatible Spring Security).
+      changes:
+        - insert:
+            tableName: utilisateur
+            columns:
+              - column:
+                  name: id
+                  value: 2d4fd2d3-7f7e-4884-ab2a-a1bba3b7f1dd
+              - column:
+                  name: email
+                  value: joyce@maisonsmino.fr
+              - column:
+                  name: mot_de_passe_hash
+                  value: $2b$10$1I9vAlDKeNCjvRMO.x/CtOaBf4WW9mHCA2ADnbP/UaZgj0wt9U1gy
+              - column:
+                  name: role
+                  value: COORDINATRICE
+              - column:
+                  name: nom
+                  value: Fontep
+              - column:
+                  name: prenom
+                  value: Joyce
+              - column:
+                  name: date_creation_compte
+                  valueDate: now()
+              - column:
+                  name: actif
+                  valueBoolean: true

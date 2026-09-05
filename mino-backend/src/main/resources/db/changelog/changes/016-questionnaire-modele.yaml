@@ -1,0 +1,72 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: Elargit type/phase pour accueillir des noms de questionnaires personnalises.
+      changes:
+        - modifyDataType:
+            tableName: questionnaire_prom_prem
+            columnName: type
+            newDataType: varchar(100)
+        - modifyDataType:
+            tableName: questionnaire_prom_prem
+            columnName: phase
+            newDataType: varchar(50)
+        - dropNotNullConstraint:
+            tableName: questionnaire_prom_prem
+            columnName: phase
+            columnDataType: varchar(50)
+
+  - changeSet:
+      id: 2
+      author: t.fontep
+      comment: >
+        Modeles de questionnaires - permet a la coordinatrice de creer d'autres
+        types de questionnaires que PROM/PREM (satisfaction atelier, etc).
+      changes:
+        - createTable:
+            tableName: questionnaire_modele
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_questionnaire_modele
+                    nullable: false
+              - column:
+                  name: nom
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uq_questionnaire_modele_nom
+              - column:
+                  name: description
+                  type: varchar(500)
+              - column:
+                  name: actif
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 3
+      author: t.fontep
+      comment: Seed des 2 modeles historiques, pour ne rien casser sur les donnees existantes.
+      changes:
+        - insert:
+            tableName: questionnaire_modele
+            columns:
+              - column: { name: id, value: "a1b2c3d4-0000-0000-0000-000000000001" }
+              - column: { name: nom, value: "PROM" }
+              - column: { name: description, value: "Patient-Reported Outcome Measure" }
+              - column: { name: actif, valueBoolean: true }
+        - insert:
+            tableName: questionnaire_modele
+            columns:
+              - column: { name: id, value: "a1b2c3d4-0000-0000-0000-000000000002" }
+              - column: { name: nom, value: "PREM" }
+              - column: { name: description, value: "Patient-Reported Experience Measure" }
+              - column: { name: actif, valueBoolean: true }

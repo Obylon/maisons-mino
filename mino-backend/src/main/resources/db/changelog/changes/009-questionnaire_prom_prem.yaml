@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        Strictement lie a MAMAN, jamais a PARTENAIRE (isolation validee dans le
+        modele de donnees - voir QuestionnairePromPrem.java).
+      changes:
+        - createTable:
+            tableName: questionnaire_prom_prem
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_questionnaire_prom_prem
+                    nullable: false
+              - column:
+                  name: maman_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_questionnaire_maman
+                    references: maman(id)
+              - column:
+                  name: type
+                  type: varchar(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phase
+                  type: varchar(5)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_soumission
+                  type: timestamp
+              - column:
+                  name: reponses
+                  type: text

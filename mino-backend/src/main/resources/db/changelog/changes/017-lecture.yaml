@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        Suivi de derniere lecture par utilisateur et par fil (groupe_id ou
+        conversation_id, indifferemment stocke dans "cle") - permet de calculer
+        un vrai nombre de messages non lus.
+      changes:
+        - createTable:
+            tableName: lecture
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_lecture
+                    nullable: false
+              - column:
+                  name: utilisateur_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_lecture_utilisateur
+                    references: utilisateur(id)
+              - column:
+                  name: cle
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_lecture
+                  type: timestamp
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: lecture
+            columnNames: utilisateur_id, cle
+            constraintName: uq_lecture_utilisateur_cle

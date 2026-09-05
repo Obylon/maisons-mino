@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        Comptes-rendus d'atelier, rediges par le professionnel. Visibles uniquement
+        par lui-meme et la coordinatrice - jamais par la maman (decision produit).
+      changes:
+        - createTable:
+            tableName: compte_rendu
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_compte_rendu
+                    nullable: false
+              - column:
+                  name: atelier_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_compte_rendu_atelier
+                    references: atelier(id)
+              - column:
+                  name: professionnel_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_compte_rendu_professionnel
+                    references: professionnel(id)
+              - column:
+                  name: contenu
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_redaction
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false

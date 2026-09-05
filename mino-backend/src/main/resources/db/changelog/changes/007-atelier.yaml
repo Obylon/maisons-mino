@@ -1,0 +1,42 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      changes:
+        - createTable:
+            tableName: atelier
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_atelier
+                    nullable: false
+              - column:
+                  name: titre
+                  type: varchar(255)
+              - column:
+                  name: type
+                  type: varchar(40)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_heure
+                  type: timestamp
+              - column:
+                  name: duree_minutes
+                  type: int
+                  defaultValueNumeric: 120
+              - column:
+                  name: professionnel_id
+                  type: varchar(36)
+                  constraints:
+                    foreignKeyName: fk_atelier_professionnel
+                    references: professionnel(id)
+              - column:
+                  name: groupe_id
+                  type: varchar(36)
+                  constraints:
+                    foreignKeyName: fk_atelier_groupe
+                    references: groupe(id)

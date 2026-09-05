@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      changes:
+        - createTable:
+            tableName: inscription_atelier
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_inscription_atelier
+                    nullable: false
+              - column:
+                  name: atelier_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_inscription_atelier
+                    references: atelier(id)
+              - column:
+                  name: utilisateur_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_inscription_utilisateur
+                    references: utilisateur(id)
+              - column:
+                  name: statut_presence
+                  type: varchar(20)
+                  defaultValue: INSCRIT
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 2
+      author: t.fontep
+      changes:
+        - addUniqueConstraint:
+            tableName: inscription_atelier
+            columnNames: atelier_id, utilisateur_id
+            constraintName: uq_inscription_atelier_utilisateur

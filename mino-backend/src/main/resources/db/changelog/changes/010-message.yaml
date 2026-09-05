@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        groupe_id renseigne pour la messagerie du groupe de 5 ; conversation_id
+        renseigne pour une conversation 1-to-1. Separation stricte a faire respecter
+        au niveau service (voir Message.java).
+      changes:
+        - createTable:
+            tableName: message
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_message
+                    nullable: false
+              - column:
+                  name: groupe_id
+                  type: varchar(36)
+                  constraints:
+                    foreignKeyName: fk_message_groupe
+                    references: groupe(id)
+              - column:
+                  name: conversation_id
+                  type: varchar(255)
+              - column:
+                  name: expediteur_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_message_expediteur
+                    references: utilisateur(id)
+              - column:
+                  name: contenu
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_envoi
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
