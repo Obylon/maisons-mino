@@ -19,8 +19,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Compiler le backend
-        run: mvn -B clean compile
+      - name: Compiler et tester le backend
+        run: mvn -B clean verify
 
   frontend:
     runs-on: ubuntu-latest
