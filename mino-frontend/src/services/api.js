@@ -13,11 +13,15 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Si le backend répond 401 (token expiré/invalide), on déconnecte proprement
+// Si le backend répond 401 (token expiré/invalide) sur une requête normale, on
+// déconnecte proprement - MAIS pas si le 401 vient de la tentative de login
+// elle-même (mot de passe faux) : dans ce cas, on laisse le formulaire de
+// connexion afficher son propre message d'erreur, sans redirection forcée.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const estUneTentativeDeLogin = error.config?.url?.includes("/auth/login");
+    if (error.response?.status === 401 && !estUneTentativeDeLogin) {
       localStorage.removeItem("mino_token");
       localStorage.removeItem("mino_user");
       window.location.href = "/login";
@@ -126,6 +130,13 @@ export const compteRenduApi = {
   listerTout: (page = 0, size = 20) => api.get(`/comptes-rendus?page=${page}&size=${size}`), // COORDINATRICE
 };
 
+export const evaluationApi = {
+  soumettre: (payload) => api.post("/evaluations", payload), // MAMAN
+  ateliersAEvaluer: () => api.get("/evaluations/a-evaluer"), // MAMAN
+  parAtelier: (atelierId) => api.get(`/evaluations/atelier/${atelierId}`), // COORDINATRICE / PROFESSIONNEL
+  synthese: () => api.get("/evaluations/synthese"), // COORDINATRICE (tout) / PROFESSIONNEL (ses ateliers)
+};
+
 export const promPremApi = {
   soumettre: (payload) => api.post("/prom-prem", payload), // MAMAN
   mesReponses: () => api.get("/prom-prem/mes-reponses"), // MAMAN
@@ -145,4 +156,27 @@ export const dossierApi = {
   lister: (page = 0, size = 20) => api.get(`/dossiers?page=${page}&size=${size}`),
   obtenir: (id) => api.get(`/dossiers/${id}`),
   genererPourUtilisateur: (utilisateurId) => api.post(`/dossiers/utilisateur/${utilisateurId}/generer`),
+};
+
+export const messagePriveApi = {
+  conversation: (autreUtilisateurId) => api.get(`/messages/prive/${autreUtilisateurId}`),
+  envoyer: (autreUtilisateurId, contenu) => api.post(`/messages/prive/${autreUtilisateurId}`, { contenu }),
+  marquerLu: (autreUtilisateurId) => api.post(`/messages/prive/${autreUtilisateurId}/marquer-lu`),
+  nonLus: (autreUtilisateurId) => api.get(`/messages/prive/${autreUtilisateurId}/non-lus`),
+  nonLusTotal: () => api.get("/messages/prive/non-lus-total"),
+};
+
+export const ressourceApi = {
+  listerPubliees: () => api.get("/ressources/publiees"),
+  listerTout: () => api.get("/ressources"), // COORDINATRICE
+  creer: (payload) => api.post("/ressources", payload),
+  modifier: (id, payload) => api.put(`/ressources/${id}`, payload),
+  supprimer: (id) => api.delete(`/ressources/${id}`),
+  uploadFichier: (id, file) => {
+    const fd = new FormData();
+    fd.append("fichier", file);
+    return api.post(`/ressources/${id}/fichier`, fd);
+  },
+  telechargerFichier: (id) => api.get(`/ressources/${id}/fichier`, { responseType: "blob" }),
+  supprimerFichier: (id) => api.delete(`/ressources/${id}/fichier`),
 };

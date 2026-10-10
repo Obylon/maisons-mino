@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        Bibliothèque de ressources — articles, fiches pratiques et liens publiés
+        par la coordinatrice, lisibles par toutes les mamans inscrites.
+      changes:
+        - createTable:
+            tableName: ressource
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_ressource
+                    nullable: false
+              - column:
+                  name: titre
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: categorie
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: url
+                  type: varchar(500)
+              - column:
+                  name: contenu
+                  type: text
+              - column:
+                  name: date_publication
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: publiee
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false

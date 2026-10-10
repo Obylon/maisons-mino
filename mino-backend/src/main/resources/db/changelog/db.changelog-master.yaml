@@ -39,3 +39,13 @@ databaseChangeLog:
       file: db/changelog/changes/019-atelier-rappel.yaml
   - include:
       file: db/changelog/changes/020-question-modele.yaml
+  - include:
+      file: db/changelog/changes/021-compte-rendu-evaluation.yaml
+  - include:
+      file: db/changelog/changes/022-compte-rendu-contenu-optionnel.yaml
+  - include:
+      file: db/changelog/changes/023-ressources.yaml
+  - include:
+      file: db/changelog/changes/024-ressource-fichier.yaml
+  - include:
+      file: db/changelog/changes/025-ressource-fichier-bytea.yaml

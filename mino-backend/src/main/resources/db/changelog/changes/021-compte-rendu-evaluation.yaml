@@ -1,0 +1,78 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        Structure le compte-rendu en champs distincts plutot qu'un seul bloc de
+        texte libre - deroule, points d'attention, suivi recommande. "contenu"
+        est conserve pour ne pas perdre les comptes-rendus deja rediges, mais
+        n'est plus utilise pour les nouveaux.
+      changes:
+        - addColumn:
+            tableName: compte_rendu
+            columns:
+              - column:
+                  name: deroule
+                  type: text
+              - column:
+                  name: points_attention
+                  type: text
+              - column:
+                  name: suivi_recommande
+                  type: text
+
+  - changeSet:
+      id: 2
+      author: t.fontep
+      comment: >
+        Evaluations d'un atelier par une maman qui y a assiste - note l'atelier
+        et le professionnel separement, chacun sur 5. Une seule evaluation par
+        (atelier, maman).
+      changes:
+        - createTable:
+            tableName: evaluation_atelier
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_evaluation_atelier
+                    nullable: false
+              - column:
+                  name: atelier_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_evaluation_atelier
+                    references: atelier(id)
+              - column:
+                  name: maman_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_evaluation_maman
+                    references: maman(id)
+              - column:
+                  name: note_atelier
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: note_professionnel
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: commentaire
+                  type: text
+              - column:
+                  name: date_soumission
+                  type: timestamp
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: evaluation_atelier
+            columnNames: atelier_id, maman_id
+            constraintName: uq_evaluation_atelier_maman

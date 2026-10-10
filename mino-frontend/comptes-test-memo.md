@@ -10,15 +10,15 @@ ceux ci-dessous sont deja recuperes et notes pour toi.
 
 ## Maman (Marie Dupont)
 - Email    : marie@test.fr
-- Mot de passe : g3HcXifus4
+- Mot de passe : 8ZhxdF8JQF
 
 ## Professionnelle (Sophie Martin, kinesitherapeute)
 - Email    : kine@test.fr
-- Mot de passe : 6y4QBdP3fj
+- Mot de passe : wqZ5FQ5pVB
 
 ## Partenaire (Teddy Fontep, partenaire)
 - Email    : tfontep24@gmail.com
-- Mot de passe : 9ct3nAfVws
+- Mot de passe : VWMUGv2Ev9
 ---
 
 

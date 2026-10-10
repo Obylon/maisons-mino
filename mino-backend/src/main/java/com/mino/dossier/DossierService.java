@@ -35,6 +35,7 @@ public class DossierService {
     private final MessageRepository messageRepository;
     private final CompteRenduRepository compteRenduRepository;
     private final ConventionPrestationRepository conventionRepository;
+    private final EvaluationAtelierRepository evaluationRepository;
 
     public String genererResume(Utilisateur u) {
         StringBuilder sb = new StringBuilder();
@@ -89,11 +90,29 @@ public class DossierService {
                     .append(" le ").append(q.getDateSoumission() != null ? q.getDateSoumission().format(FMT) : "—")
                     .append(" : ").append(q.getReponses()).append("\n"));
             sb.append("\n");
+
+            // Archivees ici car elles sont supprimees avec le compte (suppression definitive).
+            List<EvaluationAtelier> evaluations = evaluationRepository.findByMamanId(maman.getId());
+            sb.append("--- Evaluations d'ateliers donnees (").append(evaluations.size()).append(") ---\n");
+            evaluations.forEach(e -> sb.append("- ")
+                    .append(e.getAtelier().getTitre() != null ? e.getAtelier().getTitre() : e.getAtelier().getType())
+                    .append(" : atelier ").append(e.getNoteAtelier()).append("/5, soignant ")
+                    .append(e.getNoteProfessionnel()).append("/5")
+                    .append(e.getCommentaire() != null && !e.getCommentaire().isBlank() ? " — " + e.getCommentaire() : "")
+                    .append("\n"));
+            sb.append("\n");
         }, () -> sb.append("(Profil maman introuvable au moment de la generation du dossier)\n\n"));
 
-        List<Message> messages = messageRepository.findByExpediteurId(u.getId());
+        // VIE PRIVEE : on ne reprend QUE les messages du fil de groupe (groupe != null).
+        // Les messages prives entre mamans (conversationId "prive:...") sont
+        // strictement prives - ils ne doivent jamais apparaitre dans un dossier
+        // consultable par la coordinatrice. Voir MessagePriveController.
+        List<Message> messages = messageRepository.findByExpediteurId(u.getId()).stream()
+                .filter(m -> m.getGroupe() != null)
+                .toList();
         sb.append("--- Messages envoyes dans le groupe (").append(messages.size()).append(") ---\n");
         messages.forEach(m -> sb.append("- ").append(m.getDateEnvoi().format(FMT)).append(" : ").append(m.getContenu()).append("\n"));
+        sb.append("(Les messages prives entre mamans ne sont jamais archives.)\n");
     }
 
     private void resumerPartenaire(StringBuilder sb, Utilisateur u) {
@@ -132,7 +151,15 @@ public class DossierService {
 
             List<CompteRendu> comptesRendus = compteRenduRepository.findByProfessionnelId(professionnel.getId());
             sb.append("--- Comptes-rendus rediges (").append(comptesRendus.size()).append(") ---\n");
-            comptesRendus.forEach(c -> sb.append("- ").append(c.getDateRedaction().format(FMT)).append(" : ").append(c.getContenu()).append("\n"));
+            comptesRendus.forEach(c -> {
+                sb.append("- ").append(c.getDateRedaction().format(FMT))
+                        .append(" — ").append(c.getAtelier().getTitre() != null ? c.getAtelier().getTitre() : c.getAtelier().getType()).append("\n");
+                if (c.getDeroule() != null) sb.append("    Deroule : ").append(c.getDeroule()).append("\n");
+                if (c.getPointsAttention() != null) sb.append("    Points d'attention : ").append(c.getPointsAttention()).append("\n");
+                if (c.getSuiviRecommande() != null) sb.append("    Suivi recommande : ").append(c.getSuiviRecommande()).append("\n");
+                // Anciens comptes-rendus rediges avant la structuration (champ "contenu" deprecie)
+                if (c.getContenu() != null) sb.append("    Contenu : ").append(c.getContenu()).append("\n");
+            });
             sb.append("\n");
 
             List<ConventionPrestation> conventions = conventionRepository.findByProfessionnelId(professionnel.getId());
