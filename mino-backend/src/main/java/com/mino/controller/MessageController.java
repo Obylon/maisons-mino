@@ -101,7 +101,9 @@ public class MessageController {
                 .filter(u -> u.isActif() && !u.getId().equals(utilisateurConnecte.getId()))
                 .forEach(destinataire -> {
                     notificationService.notifier(destinataire.getId(), "nouveau-message",
-                            "Nouveau message dans votre groupe de " + utilisateurConnecte.getPrenom());
+                            "{\"expediteur\":\"" + utilisateurConnecte.getPrenom() + "\""
+                            + ",\"expediteurNom\":\"" + (utilisateurConnecte.getNom() != null ? utilisateurConnecte.getNom() : "") + "\""
+                            + ",\"fil\":\"groupe\",\"cible\":\"" + groupeId + "\"}");
                     emailService.envoyer(
                             destinataire.getEmail(),
                             "Nouveau message dans votre groupe MINO",

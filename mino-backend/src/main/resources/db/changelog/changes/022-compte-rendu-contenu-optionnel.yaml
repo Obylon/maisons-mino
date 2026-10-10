@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        "contenu" est deprecie au profit des 3 champs structures (deroule,
+        points_attention, suivi_recommande) ajoutes en migration 021 - les
+        nouveaux comptes-rendus ne le renseignent plus du tout, il ne doit
+        donc plus etre obligatoire. Les anciens comptes-rendus qui l'utilisaient
+        encore restent intacts (colonne conservee, juste plus obligatoire).
+      changes:
+        - dropNotNullConstraint:
+            tableName: compte_rendu
+            columnName: contenu
+            columnDataType: text

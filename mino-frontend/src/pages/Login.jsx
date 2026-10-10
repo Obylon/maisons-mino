@@ -10,6 +10,12 @@ const HOME_BY_ROLE = {
   COORDINATRICE: "/coordinatrice",
 };
 
+const FEATURES = [
+  "Suivi périnatal personnalisé",
+  "Communication simplifiée",
+  "Données sécurisées & conformes",
+];
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
@@ -30,7 +36,7 @@ export default function Login() {
     try {
       const data = await login(email, motDePasse);
       navigate(HOME_BY_ROLE[data.role] || "/");
-    } catch (err) {
+    } catch {
       setError("Email ou mot de passe incorrect.");
     } finally {
       setLoading(false);
@@ -53,87 +59,119 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      <div className="login-card">
-        <div className="login-brand">MAISONS MINO</div>
+      {/* Hero side */}
+      <div className="login-hero">
+        <div className="login-hero-logo">M</div>
+        <h1 className="login-hero-title">Maisons<br />MINO</h1>
+        <p className="login-hero-subtitle">
+          La plateforme numérique de suivi périnatal — conçue pour les maisons de naissance et leurs équipes pluridisciplinaires.
+        </p>
+        <div className="login-hero-features">
+          {FEATURES.map((f) => (
+            <div key={f} className="login-hero-feature">
+              <div className="login-hero-feature-icon">✓</div>
+              {f}
+            </div>
+          ))}
+        </div>
+      </div>
 
-        {!modeOublie ? (
-          <>
-            <h1 className="login-title">Connexion</h1>
+      {/* Form side */}
+      <div className="login-form-side">
+        <div className="login-card">
+          <div className="login-brand">Maisons MINO</div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="field">
-                <label htmlFor="email">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoFocus
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="password">Mot de passe</label>
-                <input
-                  id="password"
-                  type="password"
-                  value={motDePasse}
-                  onChange={(e) => setMotDePasse(e.target.value)}
-                  required
-                />
-              </div>
+          {!modeOublie ? (
+            <>
+              <h2 className="login-title">Connexion</h2>
+              <p className="login-subtitle">Accédez à votre espace personnel.</p>
 
-              {error && <p className="error-text">{error}</p>}
+              <form onSubmit={handleSubmit}>
+                <div className="field">
+                  <label htmlFor="email">Adresse e-mail</label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="vous@exemple.fr"
+                    required
+                    autoFocus
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="password">Mot de passe</label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={motDePasse}
+                    onChange={(e) => setMotDePasse(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
 
-              <button className="btn-primary" type="submit" disabled={loading}>
-                {loading ? "Connexion..." : "Se connecter"}
+                {error && <p className="error-text">{error}</p>}
+
+                <button className="btn-primary" type="submit" disabled={loading}>
+                  {loading ? "Connexion en cours…" : "Se connecter"}
+                </button>
+              </form>
+
+              <button
+                type="button"
+                className="login-forgot"
+                onClick={() => { setModeOublie(true); setMessageOublie(""); }}
+              >
+                Mot de passe oublié ?
               </button>
-            </form>
+            </>
+          ) : (
+            <>
+              <h2 className="login-title">Réinitialisation</h2>
+              <p className="login-subtitle">
+                Entrez votre e-mail — si un compte existe, un mot de passe temporaire vous sera envoyé.
+              </p>
 
-            <button
-              type="button"
-              onClick={() => { setModeOublie(true); setMessageOublie(""); }}
-              style={{ border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "var(--pine)", marginTop: 12 }}
-            >
-              Mot de passe oublié ?
-            </button>
-          </>
-        ) : (
-          <>
-            <h1 className="login-title">Mot de passe oublié</h1>
-            <p style={{ fontSize: 13, color: "var(--text-muted, #888)", marginBottom: 12 }}>
-              Entrez votre email — si un compte existe, un mot de passe temporaire vous sera envoyé.
-            </p>
+              <form onSubmit={handleMotDePasseOublie}>
+                <div className="field">
+                  <label htmlFor="email-oublie">Adresse e-mail</label>
+                  <input
+                    id="email-oublie"
+                    type="email"
+                    value={emailOublie}
+                    onChange={(e) => setEmailOublie(e.target.value)}
+                    placeholder="vous@exemple.fr"
+                    required
+                    autoFocus
+                  />
+                </div>
 
-            <form onSubmit={handleMotDePasseOublie}>
-              <div className="field">
-                <label htmlFor="email-oublie">Email</label>
-                <input
-                  id="email-oublie"
-                  type="email"
-                  value={emailOublie}
-                  onChange={(e) => setEmailOublie(e.target.value)}
-                  required
-                  autoFocus
-                />
-              </div>
+                {messageOublie && (
+                  <p style={{ fontSize: 13, color: "var(--success)", background: "var(--success-bg)", borderRadius: 6, padding: "8px 12px", marginBottom: 12 }}>
+                    {messageOublie}
+                  </p>
+                )}
 
-              {messageOublie && <p style={{ fontSize: 13, color: "var(--success)" }}>{messageOublie}</p>}
+                <button className="btn-primary" type="submit" disabled={envoiOublie}>
+                  {envoiOublie ? "Envoi en cours…" : "Envoyer le lien"}
+                </button>
+              </form>
 
-              <button className="btn-primary" type="submit" disabled={envoiOublie}>
-                {envoiOublie ? "Envoi..." : "Envoyer"}
+              <button
+                type="button"
+                className="login-forgot"
+                onClick={() => setModeOublie(false)}
+              >
+                ← Retour à la connexion
               </button>
-            </form>
+            </>
+          )}
 
-            <button
-              type="button"
-              onClick={() => setModeOublie(false)}
-              style={{ border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "var(--pine)", marginTop: 12 }}
-            >
-              ← Retour à la connexion
-            </button>
-          </>
-        )}
+          <p style={{ marginTop: 32, fontSize: 11, color: "var(--text-muted)", textAlign: "center" }}>
+            Maisons MINO · v2.0 · Données hébergées en France
+          </p>
+        </div>
       </div>
     </div>
   );

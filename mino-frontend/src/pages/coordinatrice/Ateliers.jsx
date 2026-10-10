@@ -59,6 +59,7 @@ export default function AteliersAdmin() {
   };
 
   const handleJourClic = (dateStr, evenements) => {
+    setError("");
     setJourSelectionne(dateStr);
     setAteliersDuJour(evenements);
     setMode("jour");
@@ -176,6 +177,7 @@ export default function AteliersAdmin() {
             ))}
           </div>
         )}
+        {mode === "jour" && error && <p className="error-text" style={{ margin: "0 0 12px" }}>{error}</p>}
         <button className="btn-primary" onClick={ouvrirCreationDepuisJour}>+ Ajouter un atelier ce jour</button>
       </Modal>
 

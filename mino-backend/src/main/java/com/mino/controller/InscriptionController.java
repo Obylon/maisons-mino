@@ -64,6 +64,7 @@ public class InscriptionController {
     private final CompteRenduRepository compteRenduRepository;
     private final ConventionPrestationRepository conventionRepository;
     private final AtelierRepository atelierRepository;
+    private final EvaluationAtelierRepository evaluationRepository;
 
     @PostMapping
     @PreAuthorize("hasRole('COORDINATRICE')")
@@ -308,6 +309,9 @@ public class InscriptionController {
                 partenaireRepository.findByMamanId(maman.getId())
                         .forEach(p -> { p.setMamanId(null); partenaireRepository.save(p); });
                 questionnaireRepository.findByMamanId(maman.getId()).forEach(questionnaireRepository::delete);
+                // Les evaluations pointent vers la maman (cle etrangere) : a supprimer avant elle.
+                // Deja archivees dans son dossier (voir DossierService) avant ce nettoyage.
+                evaluationRepository.findByMamanId(maman.getId()).forEach(evaluationRepository::delete);
                 inscriptionAtelierRepository.findByUtilisateurId(id).forEach(inscriptionAtelierRepository::delete);
                 messageRepository.findByExpediteurId(id).forEach(messageRepository::delete);
                 mamanRepository.delete(maman);

@@ -101,7 +101,9 @@ public class MessageConversationController {
         String sujet = "Nouveau message - Messagerie coordinatrice MINO";
         String corps = expediteur.getPrenom() + " vous a ecrit :\n\n\"" + contenu + "\"\n\n"
                 + "Connectez-vous a votre espace pour repondre.";
-        String notifTexte = "Nouveau message de " + expediteur.getPrenom();
+        String notifTexte = "{\"expediteur\":\"" + expediteur.getPrenom() + "\""
+                + ",\"expediteurNom\":\"" + (expediteur.getNom() != null ? expediteur.getNom() : "") + "\""
+                + ",\"fil\":\"partenaire\",\"cible\":\"" + conversationId + "\"}";
 
         if (expediteur.getRole() == Role.PARTENAIRE) {
             utilisateurRepository.findAll().stream()

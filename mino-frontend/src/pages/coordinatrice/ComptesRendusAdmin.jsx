@@ -34,16 +34,29 @@ export default function ComptesRendusAdmin() {
         )}
 
         {!loading && comptesRendus.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {comptesRendus.map((c) => (
-              <div key={c.id} style={{ border: "1px solid var(--border, #e4e1da)", borderRadius: 8, padding: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+              <div key={c.id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
                   <strong>{c.atelierTitre || "Atelier"}</strong>
-                  <span style={{ color: "var(--text-muted, #888)" }}>
+                  <span style={{ fontSize: 12, color: "var(--ink-muted)" }}>
                     {c.dateRedaction ? new Date(c.dateRedaction).toLocaleDateString("fr-FR") : "—"}
+                    {" · rédigé par "}{c.professionnelNom}
                   </span>
                 </div>
-                <p style={{ marginTop: 8, marginBottom: 0, fontSize: 13.5 }}>{c.contenu}</p>
+
+                {c.deroule && <p style={{ fontSize: 13.5, margin: "6px 0" }}><strong>Déroulé :</strong> {c.deroule}</p>}
+                {c.pointsAttention && <p style={{ fontSize: 13.5, margin: "6px 0" }}><strong>Points d'attention :</strong> {c.pointsAttention}</p>}
+                {c.suiviRecommande && <p style={{ fontSize: 13.5, margin: "6px 0" }}><strong>Suivi recommandé :</strong> {c.suiviRecommande}</p>}
+
+                {c.presences && c.presences.length > 0 && (
+                  <p style={{ fontSize: 12.5, color: "var(--ink-muted)", marginTop: 8 }}>
+                    Présentes : {c.presences.filter((p) => p.statutPresence === "PRESENT").map((p) => p.prenom).join(", ") || "aucune"}
+                    {c.presences.some((p) => p.statutPresence === "ABSENT") && (
+                      <> · Absentes : {c.presences.filter((p) => p.statutPresence === "ABSENT").map((p) => p.prenom).join(", ")}</>
+                    )}
+                  </p>
+                )}
               </div>
             ))}
           </div>

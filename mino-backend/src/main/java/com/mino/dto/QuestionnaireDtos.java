@@ -29,7 +29,8 @@ public class QuestionnaireDtos {
             String mamanPrenom,
             String type,
             String phase,
-            LocalDateTime dateSoumission
+            LocalDateTime dateSoumission,
+            String reponses
     ) {}
 
     public record ModeleRequest(

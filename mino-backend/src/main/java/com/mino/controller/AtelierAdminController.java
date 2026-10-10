@@ -8,7 +8,10 @@ import com.mino.model.Groupe;
 import com.mino.model.Professionnel;
 import com.mino.notification.NotificationService;
 import com.mino.repository.AtelierRepository;
+import com.mino.repository.CompteRenduRepository;
+import com.mino.repository.EvaluationAtelierRepository;
 import com.mino.repository.GroupeRepository;
+import com.mino.repository.InscriptionAtelierRepository;
 import com.mino.repository.ProfessionnelRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +44,9 @@ public class AtelierAdminController {
     private final GroupeRepository groupeRepository;
     private final EmailService emailService;
     private final NotificationService notificationService;
+    private final InscriptionAtelierRepository inscriptionAtelierRepository;
+    private final CompteRenduRepository compteRenduRepository;
+    private final EvaluationAtelierRepository evaluationRepository;
 
     @PostMapping
     public ResponseEntity<AtelierResponse> creer(@Valid @RequestBody AtelierRequest request) {
@@ -88,10 +94,22 @@ public class AtelierAdminController {
     }
 
     @DeleteMapping("/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Void> supprimer(@PathVariable String id) {
         if (!atelierRepository.existsById(id)) {
             throw new NoSuchElementException("Atelier introuvable : " + id);
         }
+
+        // Un atelier qui a deja un compte-rendu ou des evaluations a "eu lieu" :
+        // ce sont des traces a conserver (comptes-rendus de soins, avis des
+        // mamans), on refuse donc de le supprimer plutot que de les effacer
+        // en silence. Seules les simples inscriptions sont retirees.
+        if (!compteRenduRepository.findByAtelierId(id).isEmpty() || !evaluationRepository.findByAtelierId(id).isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Cet atelier a déjà un compte-rendu ou des évaluations : il ne peut plus être supprimé (historique à conserver).");
+        }
+
+        inscriptionAtelierRepository.deleteAll(inscriptionAtelierRepository.findByAtelierId(id));
         atelierRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

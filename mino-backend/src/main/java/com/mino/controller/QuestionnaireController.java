@@ -1,9 +1,12 @@
 package com.mino.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mino.dto.QuestionnaireDtos.QuestionnaireAdminResponse;
 import com.mino.dto.QuestionnaireDtos.QuestionnaireRequest;
 import com.mino.dto.QuestionnaireDtos.QuestionnaireResponse;
 import com.mino.model.*;
+import com.mino.notification.NotificationService;
 import com.mino.repository.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,19 +22,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
- * Questionnaires PROM/PREM - la donnee la plus sensible du modele (voir
- * QuestionnairePromPrem.java : "Strictement lie a MAMAN, jamais a PARTENAIRE").
- *
- * Regles d'acces en lecture (documentees sur l'entite) :
- * - MAMAN : uniquement les siens.
- * - PROFESSIONNEL : uniquement s'il "suit" cette maman, c'est-a-dire s'il anime
- *   au moins un atelier rattache au groupe de cette maman (verifie explicitement
- *   ci-dessous, jamais suppose depuis l'URL).
- * - COORDINATRICE : acces complet (administration/impact).
- * En ecriture : une MAMAN ne peut soumettre que pour elle-meme, jamais pour une autre.
+ * Questionnaires PROM/PREM - la donnee la plus sensible du modele.
+ * Lors d'un PROM avec score EPDS >= 13, une alerte SSE est envoyée
+ * à toutes les coordinatrices connectées.
  */
 @RestController
 @RequestMapping("/api/prom-prem")
@@ -44,6 +42,9 @@ public class QuestionnaireController {
     private final MamanRepository mamanRepository;
     private final ProfessionnelRepository professionnelRepository;
     private final AtelierRepository atelierRepository;
+    private final UtilisateurRepository utilisateurRepository;
+    private final NotificationService notificationService;
+    private final ObjectMapper objectMapper;
 
     @PostMapping
     @PreAuthorize("hasRole('MAMAN')")
@@ -66,6 +67,20 @@ public class QuestionnaireController {
         questionnaire.setReponses(request.reponses());
         questionnaire.setDateSoumission(LocalDateTime.now());
         questionnaire = questionnaireRepository.save(questionnaire);
+
+        // Alerte SSE si PROM avec score EPDS élevé (>= 13)
+        if ("PROM".equalsIgnoreCase(request.type())) {
+            int score = calculerScoreEPDS(request.reponses());
+            if (score >= 13) {
+                String prenom = maman.getUtilisateur().getPrenom().replace("\"", "\\\"");
+                String nom = maman.getUtilisateur().getNom().replace("\"", "\\\"");
+                String payload = String.format(
+                        "{\"type\":\"alerte-prom\",\"mamanPrenom\":\"%s\",\"mamanNom\":\"%s\",\"score\":%d}",
+                        prenom, nom, score);
+                utilisateurRepository.findByRole(Role.COORDINATRICE)
+                        .forEach(c -> notificationService.notifier(c.getId(), "alerte-prom", payload));
+            }
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(questionnaire));
     }
@@ -94,7 +109,8 @@ public class QuestionnaireController {
                         q.getMaman().getUtilisateur().getPrenom(),
                         q.getType(),
                         q.getPhase(),
-                        q.getDateSoumission()
+                        q.getDateSoumission(),
+                        q.getReponses()
                 ));
         return ResponseEntity.ok(tout);
     }
@@ -115,10 +131,6 @@ public class QuestionnaireController {
         return ResponseEntity.ok(reponses);
     }
 
-    /**
-     * Un professionnel "suit" une maman s'il anime au moins un atelier rattache
-     * au groupe de cette maman - jamais suppose, toujours verifie ici.
-     */
     private boolean professionnelSuitCetteMaman(Utilisateur utilisateurConnecte, Maman maman) {
         if (maman.getGroupe() == null) {
             return false;
@@ -128,6 +140,24 @@ public class QuestionnaireController {
 
         return atelierRepository.findByProfessionnelId(professionnel.getId()).stream()
                 .anyMatch(a -> a.getGroupe() != null && a.getGroupe().getId().equals(maman.getGroupe().getId()));
+    }
+
+    /** Score EPDS : items q1 et q2 sont à score inversé (3-valeur), les autres = valeur. */
+    private int calculerScoreEPDS(String reponsesJson) {
+        try {
+            List<Map<String, Object>> arr = objectMapper.readValue(reponsesJson, new TypeReference<>() {});
+            Set<String> reversed = Set.of("q1", "q2");
+            int total = 0;
+            for (Map<String, Object> item : arr) {
+                if (item.get("questionId") instanceof String qId && item.get("valeur") instanceof Number num) {
+                    int v = num.intValue();
+                    total += reversed.contains(qId) ? 3 - v : v;
+                }
+            }
+            return total;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     private QuestionnaireResponse toResponse(QuestionnairePromPrem q) {

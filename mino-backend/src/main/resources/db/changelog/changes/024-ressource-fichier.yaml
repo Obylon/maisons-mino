@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        Pièces jointes aux ressources de la bibliothèque (PDF, images…).
+        has_fichier evite de charger le blob lors du listage.
+      changes:
+        - addColumn:
+            tableName: ressource
+            columns:
+              - column:
+                  name: nom_fichier
+                  type: varchar(255)
+              - column:
+                  name: type_fichier
+                  type: varchar(100)
+              - column:
+                  name: has_fichier
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fichier_data
+                  type: blob

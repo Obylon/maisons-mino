@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: t.fontep
+      comment: >
+        Corrige le type de fichier_data : Liquibase 'blob' avait cree la colonne
+        en type PostgreSQL 'oid' (Large Object OID), incompatible avec le cast
+        direct vers bytea. Comme aucun fichier n'a encore ete uploade (colonne
+        toujours NULL), on la recrée proprement en bytea - type natif PostgreSQL
+        pour le stockage de donnees binaires de taille moderee (PDF, images).
+      changes:
+        - dropColumn:
+            tableName: ressource
+            columnName: fichier_data
+        - addColumn:
+            tableName: ressource
+            columns:
+              - column:
+                  name: fichier_data
+                  type: bytea
